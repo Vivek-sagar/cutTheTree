@@ -2,6 +2,7 @@
 #include <vector>
 #include <list>
 #include <algorithm>
+#include <stack>
 #include <math.h>
 
 using namespace std;
@@ -31,6 +32,28 @@ int dfs_weight_sum(vector<node> graph, int n, int start)
 	vector<int> completed;
 	int sum = 0;
 	return process(graph, completed, start, sum);
+}
+
+int dfs_weight_sum_custom_stack(vector<node> graph, int n, int start)
+{
+	int curr = start;
+	list<int> to_check;
+	to_check.push_back(curr);
+	list<int> completed;
+	int sum = 0;
+	while (to_check.size() > 0)
+	{
+		curr = to_check.back();
+		to_check.pop_back();
+		for (auto it2=graph[curr].neighbours.begin(); it2 != graph[curr].neighbours.end(); it2++)
+		{
+			if (find(completed.begin(), completed.end(), *it2) == completed.end())
+				to_check.push_back(*it2);
+		}
+		sum += graph[curr].weight;
+		completed.push_back(curr);
+	}
+	return sum;
 }
 
 int main()
@@ -78,7 +101,7 @@ int main()
 		{
 			it->neighbours.remove(*it2);
 			graph[*it2].neighbours.remove(it-graph.begin());
-			difference =  abs(dfs_weight_sum(graph, n, it-graph.begin()) - dfs_weight_sum(graph, n, *it2));
+			difference =  abs(dfs_weight_sum_custom_stack(graph, n, it-graph.begin()) - dfs_weight_sum_custom_stack(graph, n, *it2));
 			if (difference < smallest_difference)
 				smallest_difference = difference;
 			it->neighbours.push_back(*it2);
