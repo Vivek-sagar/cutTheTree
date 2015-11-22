@@ -2,6 +2,7 @@
 #include <vector>
 #include <list>
 #include <algorithm>
+#include <math.h>
 
 using namespace std;
 
@@ -66,6 +67,8 @@ int main()
 	// 	cout << endl;
 	// }
 	list<int> temp;
+	int smallest_difference = 10000;
+	int difference;
 	for (auto it = graph.begin(); it != graph.end(); it++)
 	{
 		temp.clear();
@@ -75,13 +78,14 @@ int main()
 		{
 			it->neighbours.remove(*it2);
 			graph[*it2].neighbours.remove(it-graph.begin());
-			cout << dfs_weight_sum(graph, n, it-graph.begin()) << " " << dfs_weight_sum(graph, n, *it2)<< endl;
-
+			difference =  abs(dfs_weight_sum(graph, n, it-graph.begin()) - dfs_weight_sum(graph, n, *it2));
+			if (difference < smallest_difference)
+				smallest_difference = difference;
 			it->neighbours.push_back(*it2);
 			graph[*it2].neighbours.push_back(it-graph.begin());
 		}
 	}
-	
+	cout << smallest_difference;
 
 	return 0;
 }
