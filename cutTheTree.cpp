@@ -166,32 +166,53 @@ int main()
 	//print_graph(graph);
 	int best_node = find_best_partial_sum(graph, sum);
 	//cout << best_node << endl;
-	list<int> temp;
-	int smallest_difference = 10000;
-	int difference;
-	temp = graph[best_node].neighbours;
-	for (auto it = temp.begin(); it != temp.end(); it++)
+	// list<int> temp;
+	// int smallest_difference = 10000;
+	// int difference;
+	// temp = graph[best_node].neighbours;
+	// for (auto it = temp.begin(); it != temp.end(); it++)
+	// {
+	// 		graph[best_node].neighbours.remove(*it);
+	// 		graph[*it].neighbours.remove(best_node);
+	// 		//cout << "considering: "  << *it << endl;
+	// 		completed.clear();
+	// 		partial_summer_recursive(graph, completed, best_node);
+	// 		int val1 = graph[best_node].partial_sum;
+	// 		completed.clear();
+	// 		partial_summer_recursive(graph, completed, *it);
+	// 		int val2 = graph[*it].partial_sum;
+	// 		//difference =  abs(dfs_weight_sum_custom_stack(graph, n, best_node) - dfs_weight_sum_custom_stack(graph, n, *it));
+	// 		difference = abs(val1-val2);
+	// 		if (difference < smallest_difference)
+	// 			smallest_difference = difference;
+	// 		graph[best_node].neighbours.push_back(*it);
+	// 		graph[*it].neighbours.push_back(best_node);
+	// }
+
+	int largest_partial_sum = 0;
+	int largest_partial_sum_node = 0;
+	for (auto it = graph[best_node].neighbours.begin(); it != graph[best_node].end(); it++)
 	{
-			graph[best_node].neighbours.remove(*it);
-			graph[*it].neighbours.remove(best_node);
-			//cout << "considering: "  << *it << endl;
-			completed.clear();
-			partial_summer_recursive(graph, completed, best_node);
-			int val1 = graph[best_node].partial_sum;
-			completed.clear();
-			partial_summer_recursive(graph, completed, *it);
-			int val2 = graph[*it].partial_sum;
-			//difference =  abs(dfs_weight_sum_custom_stack(graph, n, best_node) - dfs_weight_sum_custom_stack(graph, n, *it));
-			difference = abs(val1-val2);
-			if (difference < smallest_difference)
-				smallest_difference = difference;
-			graph[best_node].neighbours.push_back(*it);
-			graph[*it].neighbours.push_back(best_node);
+		if (it->partial_sum > largest_partial_sum)
+		{
+			largest_partial_sum = it->partial_sum;
+			largest_partial_sum_node = it-graph[best_node].neighbours.begin();
+		}
 	}
 
+	graph[best_node].neighbours.remove(largest_partial_sum_node);
+	graph[largest_partial_sum_node].neighbours.remove(best_node);
+	completed.clear();
+	partial_summer_recursive(graph, completed, best_node);
+	int val1 = graph[best_node].partial_sum;
+	completed.clear();
+	partial_summer_recursive(graph, completed, largest_partial_sum_node);
+	int val2 = graph[largest_partial_sum_node].partial_sum;
+	//difference =  abs(dfs_weight_sum_custom_stack(graph, n, best_node) - dfs_weight_sum_custom_stack(graph, n, *it));
+	cout << abs(val1-val2) << endl;
 	//print_partial_sums(graph);
 
-	cout << smallest_difference << endl;
+	//cout << smallest_difference << endl;
 
 	return 0;
 }
