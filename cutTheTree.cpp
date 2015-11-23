@@ -10,31 +10,34 @@ using namespace std;
 struct node
 {
 	int weight;
+	int partial_sum;
 	list<int> neighbours;
 };
 
-int process (vector<node> graph, vector<int> completed, int curr, int &sum)
+int process (vector<node> &graph, vector<int> &completed, int curr)
 {
 	completed.push_back(curr);
+	graph[curr].partial_sum = graph[curr].weight;
+
 	for (auto it = graph[curr].neighbours.begin(); it != graph[curr].neighbours.end(); it++)
 	{
 		if (find(completed.begin(), completed.end(), *it) == completed.end())
 		{
-			process(graph, completed, *it, sum);	
+			graph[curr].partial_sum += process(graph, completed, *it);	
 		}
 	}
-	sum += graph[curr].weight;
-	return sum;
+	
+	return graph[curr].partial_sum;
 }
 
 int dfs_weight_sum(vector<node> graph, int n, int start)
 {
 	vector<int> completed;
 	int sum = 0;
-	return process(graph, completed, start, sum);
+	return process(graph, completed, start);
 }
 
-int dfs_weight_sum_custom_stack(vector<node> graph, int n, int start)
+int dfs_weight_sum_custom_stack(vector<node> &graph, int n, int start)
 {
 	int curr = start;
 	list<int> to_check;
@@ -51,10 +54,55 @@ int dfs_weight_sum_custom_stack(vector<node> graph, int n, int start)
 				to_check.push_back(*it2);
 		}
 		sum += graph[curr].weight;
+
+		//graph[curr].partial_sum = sum;
+		//cout << "node: " << curr << ": " << graph[curr].partial_sum << " " << endl;
 		completed.push_back(curr);
 	}
 	return sum;
 }
+
+void print_partial_sums(vector<node> graph)
+{
+	for (auto it = graph.begin(); it != graph.end(); it++)
+	{
+		cout << it-graph.begin() << ": " << it->partial_sum << endl;
+	}
+}
+
+void print_graph(vector<node> graph)
+{
+	for (auto it = graph.begin(); it != graph.end(); it++)
+	{
+		cout << it-graph.begin() << "(" << it->weight << "){" << it->partial_sum << "}: ";
+		for (auto it2 = it->neighbours.begin(); it2 != it->neighbours.end(); it2++)
+		{
+			cout << *it2 << " ";
+		}
+		cout << endl;
+	}
+}
+
+int find_best_partial_sum(vector<node> graph, int sum)
+{
+	int best = graph[0].partial_sum;
+	int best_node = 0;
+	//cout << "sum/2 is: " << sum/2 << endl;
+	for (auto it = graph.begin(); it != graph.end(); it++)
+	{
+		//cout << "considering: " << it-graph.begin() <<  " " << it->partial_sum  << "\n";
+		if (abs(it->partial_sum - sum/2) < abs(best-sum/2))
+		{
+			//cout << "best\n";
+			best_node = it-graph.begin();
+			best = it->partial_sum;
+		}
+	}
+	//best_node--;
+	//cout << best_node << " " << best << endl;
+	return best_node;
+}
+
 
 int main()
 {
@@ -89,26 +137,53 @@ int main()
 	// 	}
 	// 	cout << endl;
 	// }
+
+	// list<int> temp;
+	// int smallest_difference = 10000;
+	// int difference;
+	// for (auto it = graph.begin(); it != graph.end(); it++)
+	// {
+	// 	temp.clear();
+	// 	//copy (it->neighbours.begin(), it->neighbours.end(), temp.begin());
+	// 	temp = it->neighbours;
+	// 	for (auto it2 = temp.begin(); it2 != temp.end(); it2++)
+	// 	{
+	// 		it->neighbours.remove(*it2);
+	// 		graph[*it2].neighbours.remove(it-graph.begin());
+	// 		difference =  abs(dfs_weight_sum_custom_stack(graph, n, it-graph.begin()) - dfs_weight_sum_custom_stack(graph, n, *it2));
+	// 		if (difference < smallest_difference)
+	// 			smallest_difference = difference;
+	// 		it->neighbours.push_back(*it2);
+	// 		graph[*it2].neighbours.push_back(it-graph.begin());
+	// 	}
+	// }
+	// cout << smallest_difference;
+
+	int sum = dfs_weight_sum_custom_stack(graph, n, 0);
+	vector<int> completed;
+	process(graph, completed, 0);
+	//print_graph(graph);
+	int best_node = find_best_partial_sum(graph, sum);
+	//cout << best_node << endl;
 	list<int> temp;
 	int smallest_difference = 10000;
 	int difference;
-	for (auto it = graph.begin(); it != graph.end(); it++)
+	temp = graph[best_node].neighbours;
+	for (auto it = temp.begin(); it != temp.end(); it++)
 	{
-		temp.clear();
-		//copy (it->neighbours.begin(), it->neighbours.end(), temp.begin());
-		temp = it->neighbours;
-		for (auto it2 = temp.begin(); it2 != temp.end(); it2++)
-		{
-			it->neighbours.remove(*it2);
-			graph[*it2].neighbours.remove(it-graph.begin());
-			difference =  abs(dfs_weight_sum_custom_stack(graph, n, it-graph.begin()) - dfs_weight_sum_custom_stack(graph, n, *it2));
+			graph[best_node].neighbours.remove(*it);
+			graph[*it].neighbours.remove(best_node);
+			//cout << "considering: "  << *it << endl;
+			difference =  abs(dfs_weight_sum_custom_stack(graph, n, best_node) - dfs_weight_sum_custom_stack(graph, n, *it));
 			if (difference < smallest_difference)
 				smallest_difference = difference;
-			it->neighbours.push_back(*it2);
-			graph[*it2].neighbours.push_back(it-graph.begin());
-		}
+			graph[best_node].neighbours.push_back(*it);
+			graph[*it].neighbours.push_back(best_node);
 	}
-	cout << smallest_difference;
+
+	//print_partial_sums(graph);
+
+	cout << smallest_difference << endl;
 
 	return 0;
 }
