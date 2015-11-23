@@ -191,12 +191,12 @@ int main()
 
 	int largest_partial_sum = 0;
 	int largest_partial_sum_node = 0;
-	for (auto it = graph[best_node].neighbours.begin(); it != graph[best_node].end(); it++)
+	for (auto it = graph[best_node].neighbours.begin(); it != graph[best_node].neighbours.end(); it++)
 	{
-		if (it->partial_sum > largest_partial_sum)
+		if (graph[*it].partial_sum > largest_partial_sum)
 		{
-			largest_partial_sum = it->partial_sum;
-			largest_partial_sum_node = it-graph[best_node].neighbours.begin();
+			largest_partial_sum = graph[*it].partial_sum;
+			largest_partial_sum_node = *it;
 		}
 	}
 
