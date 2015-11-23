@@ -12,6 +12,7 @@ struct node
 	int weight;
 	int partial_sum;
 	list<int> neighbours;
+	int parent;
 };
 
 int partial_summer_recursive (vector<node> &graph, vector<int> &completed, int curr)
@@ -28,6 +29,55 @@ int partial_summer_recursive (vector<node> &graph, vector<int> &completed, int c
 	}
 	
 	return graph[curr].partial_sum;
+}
+
+int partial_summer_nonrecursive(vector<node> &graph, vector<int> completed, int curr)
+{
+	list<int> to_visit;
+	to_visit.push_back(curr);
+	int sum=0;
+	while (to_visit.size() > 0)
+	{
+		curr = to_visit.back();
+		completed.push_back(curr);
+		to_visit.pop_back();
+		for (auto it = graph[curr].neighbours.begin(); it != graph[curr].neighbours.end(); it++)
+		{
+			if (find(completed.begin(), completed.end(), *it) == completed.end())
+			{
+				to_visit.push_back(*it);
+			}
+			else
+				graph[curr].parent = *it;
+		}
+		// cout << curr << " ";
+		// for (auto it2=completed.begin(); it2 != completed.end(); it2++)
+		// 	cout << *it2 << " ";
+		// cout << endl;
+	}
+	while (completed.size()>0)
+	{
+		curr = completed.back();
+		sum += graph[curr].weight;
+		completed.pop_back();
+		graph[curr].partial_sum = graph[curr].weight;
+		if (graph[curr].neighbours.size() < 2)
+		{
+			//Nothing :E
+		}
+		else
+		{
+			for (auto it = graph[curr].neighbours.begin(); it != graph[curr].neighbours.end(); it++)
+			{
+				if (*it != graph[curr].parent)
+				{
+					graph[curr].partial_sum += graph[*it].partial_sum;
+				}
+			}
+		}
+		//cout << curr << " " << graph[curr].neighbours.size() << " " << graph[curr].weight << " " << graph[curr].partial_sum << endl;
+	}
+	return sum;
 }
 
 // int dfs_weight_sum(vector<node> graph, int n, int start)
@@ -161,8 +211,8 @@ int main()
 
 	//int sum = dfs_weight_sum_custom_stack(graph, n, 0);
 	vector<int> completed;
-	partial_summer_recursive(graph, completed, 0);
-	int sum = graph[0].partial_sum;
+	int sum = partial_summer_nonrecursive(graph, completed, 0);
+	//print_partial_sums(graph);
 	//print_graph(graph);
 	int best_node = find_best_partial_sum(graph, sum);
 	//cout << best_node << endl;
@@ -199,18 +249,16 @@ int main()
 			largest_partial_sum_node = *it;
 		}
 	}
-
+	//cout << best_node << " " << largest_partial_sum_node << endl;
 	graph[best_node].neighbours.remove(largest_partial_sum_node);
 	graph[largest_partial_sum_node].neighbours.remove(best_node);
 	completed.clear();
-	partial_summer_recursive(graph, completed, best_node);
-	int val1 = graph[best_node].partial_sum;
+	int val1 = partial_summer_nonrecursive(graph, completed, best_node);
+	// int val1 = graph[best_node].partial_sum;
 	completed.clear();
-	partial_summer_recursive(graph, completed, largest_partial_sum_node);
-	int val2 = graph[largest_partial_sum_node].partial_sum;
-	//difference =  abs(dfs_weight_sum_custom_stack(graph, n, best_node) - dfs_weight_sum_custom_stack(graph, n, *it));
+	int val2 = partial_summer_nonrecursive(graph, completed, largest_partial_sum_node);
+	// int val2 = graph[largest_partial_sum_node].partial_sum;
 	cout << abs(val1-val2) << endl;
-	//print_partial_sums(graph);
 
 	//cout << smallest_difference << endl;
 
