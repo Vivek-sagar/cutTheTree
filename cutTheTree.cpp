@@ -14,7 +14,7 @@ struct node
 	list<int> neighbours;
 };
 
-int process (vector<node> &graph, vector<int> &completed, int curr)
+int partial_summer_recursive (vector<node> &graph, vector<int> &completed, int curr)
 {
 	completed.push_back(curr);
 	graph[curr].partial_sum = graph[curr].weight;
@@ -23,19 +23,19 @@ int process (vector<node> &graph, vector<int> &completed, int curr)
 	{
 		if (find(completed.begin(), completed.end(), *it) == completed.end())
 		{
-			graph[curr].partial_sum += process(graph, completed, *it);	
+			graph[curr].partial_sum += partial_summer_recursive(graph, completed, *it);	
 		}
 	}
 	
 	return graph[curr].partial_sum;
 }
 
-int dfs_weight_sum(vector<node> graph, int n, int start)
-{
-	vector<int> completed;
-	int sum = 0;
-	return process(graph, completed, start);
-}
+// int dfs_weight_sum(vector<node> graph, int n, int start)
+// {
+// 	vector<int> completed;
+// 	int sum = 0;
+// 	return process(graph, completed, start);
+// }
 
 int dfs_weight_sum_custom_stack(vector<node> &graph, int n, int start)
 {
@@ -159,9 +159,10 @@ int main()
 	// }
 	// cout << smallest_difference;
 
-	int sum = dfs_weight_sum_custom_stack(graph, n, 0);
+	//int sum = dfs_weight_sum_custom_stack(graph, n, 0);
 	vector<int> completed;
-	process(graph, completed, 0);
+	partial_summer_recursive(graph, completed, 0);
+	int sum = graph[0].partial_sum;
 	//print_graph(graph);
 	int best_node = find_best_partial_sum(graph, sum);
 	//cout << best_node << endl;
@@ -174,7 +175,14 @@ int main()
 			graph[best_node].neighbours.remove(*it);
 			graph[*it].neighbours.remove(best_node);
 			//cout << "considering: "  << *it << endl;
-			difference =  abs(dfs_weight_sum_custom_stack(graph, n, best_node) - dfs_weight_sum_custom_stack(graph, n, *it));
+			completed.clear();
+			partial_summer_recursive(graph, completed, best_node);
+			int val1 = graph[best_node].partial_sum;
+			completed.clear();
+			partial_summer_recursive(graph, completed, *it);
+			int val2 = graph[*it].partial_sum;
+			//difference =  abs(dfs_weight_sum_custom_stack(graph, n, best_node) - dfs_weight_sum_custom_stack(graph, n, *it));
+			difference = abs(val1-val2);
 			if (difference < smallest_difference)
 				smallest_difference = difference;
 			graph[best_node].neighbours.push_back(*it);
